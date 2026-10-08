@@ -1,16 +1,41 @@
-import { createFileRoute } from "@tanstack/react-router";
+import React, { useState, useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Sparkles, Zap, ShieldCheck, LayoutDashboard, Package, Boxes, ShoppingCart,
-  Wallet, FileBarChart, MessageCircle, Instagram, MapPin, ImageIcon, ChevronDown,
+  Sparkles,
+  Zap,
+  ShieldCheck,
+  LayoutDashboard,
+  Package,
+  Boxes,
+  ShoppingCart,
+  Wallet,
+  FileBarChart,
+  MessageCircle,
+  Instagram,
+  MapPin,
+  ImageIcon,
+  ChevronDown,
+  ArrowRight,
 } from "lucide-react";
+import { db, DB_UPDATED_EVENT, Product, DEFAULT_PRODUCTS } from "@/lib/database";
 
 export const Route = createFileRoute("/")({
+  loader: () => ({
+    initialProducts: DEFAULT_PRODUCTS,
+  }),
   head: () => ({
     meta: [
-      { title: "UMKM Manager — Bantu UMKM Kuliner Bekasi Lebih Rapi" },
-      { name: "description", content: "Kelola produk, stok, penjualan, keuangan, dan laporan usaha kuliner kamu dengan cara yang sederhana, praktis, dan terpercaya." },
-      { property: "og:title", content: "UMKM Manager — Bantu UMKM Kuliner Lebih Rapi" },
-      { property: "og:description", content: "Platform digital sederhana untuk UMKM kuliner mikro dan kecil di Bekasi." },
+      { title: "Donat & Cookies Bekasi — Rasa Lembut & Lumer Spesial" },
+      {
+        name: "description",
+        content:
+          "Pesan aneka donat kentang lembut, bomboloni lumer, dan soft-baked cookies dibuat fresh setiap hari di Bekasi.",
+      },
+      { property: "og:title", content: "Donat & Cookies Bekasi — Lembut & Lumer" },
+      {
+        property: "og:description",
+        content: "Spesialis donat dan soft cookies premium rumahan di Bekasi.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -20,33 +45,50 @@ export const Route = createFileRoute("/")({
 
 const NA = "Informasi belum tersedia.";
 
-const products = [
-  { name: "Brownies Cokelat", desc: "Tekstur lembut dan rasa cokelat yang nikmat.", price: "Rp25.000" },
-  { name: "Cookies Cokelat", desc: "Renyah, manis, dan cocok dinikmati sendiri atau bareng teman.", price: "Rp15.000" },
-  { name: "Donat", desc: "Camilan yang pas buat sarapan atau teman santai.", price: "Rp5.000" },
-];
-
 const reasons = [
-  { icon: Sparkles, title: "Sederhana", desc: "Tampilan gampang dipahami, nggak perlu jago teknologi." },
-  { icon: Zap, title: "Praktis", desc: "Catat produk, stok, dan penjualan cukup dari HP." },
-  { icon: ShieldCheck, title: "Terpercaya", desc: "Data usahamu tersimpan rapi dan bisa dicek kapan saja." },
+  {
+    icon: Sparkles,
+    title: "Fresh Tiap Pagi",
+    desc: "Donat dan cookies dibuat fresh setiap hari, bukan stok kemarin.",
+  },
+  {
+    icon: Zap,
+    title: "Bahan Premium",
+    desc: "Menggunakan butter asli dan cokelat lumer berkualitas tanpa pengawet.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Kirim Cepat & Rapi",
+    desc: "Kemasan box rapi dan higienis, aman dikirim dengan kurir instan se-Bekasi.",
+  },
 ];
 
 const features = [
-  { icon: LayoutDashboard, name: "Dashboard" },
-  { icon: Package, name: "Produk" },
-  { icon: Boxes, name: "Stok" },
-  { icon: ShoppingCart, name: "Penjualan" },
-  { icon: Wallet, name: "Keuangan" },
-  { icon: FileBarChart, name: "Laporan" },
+  { icon: LayoutDashboard, name: "Dashboard", tab: "dashboard", desc: "Ringkasan & Metrik" },
+  { icon: Package, name: "Produk", tab: "produk", desc: "Katalog & Menu" },
+  { icon: Boxes, name: "Stok", tab: "stok", desc: "Inventaris Real-time" },
+  { icon: ShoppingCart, name: "Penjualan", tab: "penjualan", desc: "Pesanan Masuk" },
+  { icon: Wallet, name: "Keuangan", tab: "keuangan", desc: "Buku Kas & Laba" },
+  { icon: FileBarChart, name: "Laporan", tab: "laporan", desc: "Analitik Bisnis" },
 ];
 
 const faqs = [
-  { q: "UMKM Manager itu apa sih?", a: "Platform digital buat bantu UMKM kuliner mencatat produk, stok, penjualan, keuangan, dan laporan dalam satu tempat." },
-  { q: "Cocok buat usaha kecil?", a: "Cocok banget. UMKM Manager memang dibuat untuk UMKM kuliner mikro dan kecil." },
-  { q: "Bisa dipakai lewat HP?", a: "Bisa. Tampilannya dibuat ramah di HP supaya praktis dipakai di mana saja." },
-  { q: "Fitur apa saja yang tersedia?", a: "Ada Dashboard, Produk, Stok, Penjualan, Keuangan, dan Laporan." },
-  { q: "Gimana cara pesan atau tanya-tanya?", a: "Isi form pesanan di bawah atau hubungi kami lewat WhatsApp." },
+  {
+    q: "Donat dan cookies dibuat fresh setiap hari?",
+    a: "Ya! Semua donat dan cookies kami dipanggang dan digoreng fresh setiap pagi dengan bahan premium tanpa pengawet.",
+  },
+  {
+    q: "Bisa pesan untuk hampers atau acara?",
+    a: "Bisa banget. Kami melayani pesanan box donat (isi 6 atau 12) serta jar soft cookies untuk arisan, ulang tahun, dan hampers.",
+  },
+  {
+    q: "Bisa pesan lewat mana saja?",
+    a: "Anda bisa langsung pesan melalui formulir pesanan di bawah ini atau chat langsung via WhatsApp kami.",
+  },
+  {
+    q: "Berapa lama daya simpan cookies dan donatnya?",
+    a: "Donat paling nikmat dikonsumsi dalam 1-2 hari. Untuk soft cookies bisa tahan 7 hari di suhu ruang atau 14 hari di dalam kulkas.",
+  },
 ];
 
 function Placeholder({ label }: { label: string }) {
@@ -58,7 +100,19 @@ function Placeholder({ label }: { label: string }) {
   );
 }
 
-function Section({ id, eyebrow, title, children, className = "" }: { id?: string; eyebrow: string; title: string; children: React.ReactNode; className?: string }) {
+function Section({
+  id,
+  eyebrow,
+  title,
+  children,
+  className = "",
+}: {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <section id={id} className={`px-5 py-16 md:py-24 ${className}`}>
       <div className="mx-auto max-w-5xl">
@@ -70,18 +124,71 @@ function Section({ id, eyebrow, title, children, className = "" }: { id?: string
   );
 }
 
-const field = "w-full rounded-lg border border-input bg-card px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30";
+const field =
+  "w-full rounded-lg border border-input bg-card px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30";
 
 function Index() {
+  const { initialProducts } = Route.useLoaderData();
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+
+  useEffect(() => {
+    setProducts(db.getProducts());
+    const handleUpdate = () => setProducts(db.getProducts());
+    window.addEventListener(DB_UPDATED_EVENT, handleUpdate);
+    return () => window.removeEventListener(DB_UPDATED_EVENT, handleUpdate);
+  }, []);
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-          <a href="#" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground">UM</span>
-            UMKM Manager
-          </a>
-          <a href="#pesan" className="text-sm font-medium text-primary hover:underline">Pesan</a>
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3.5">
+          <Link to="/" className="flex items-center gap-2 font-semibold">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground font-bold">
+              DC
+            </span>
+            Donat & Cookies Bekasi
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard"
+              className="rounded-full bg-primary/10 px-4 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-primary-foreground shadow-sm"
+            >
+              Masuk Dashboard →
+            </Link>
+            <a href="#pesan" className="text-sm font-medium text-primary hover:underline">
+              Pesan
+            </a>
+          </div>
+        </div>
+
+        {/* Fitur Navigation Strip di Bagian Atas */}
+        <div className="border-t border-border/40 bg-muted/30 px-5 py-2">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 overflow-x-auto text-xs">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
+                Fitur Pengelolaan:
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+              {features.map((f) => (
+                <Link
+                  key={f.name}
+                  to="/dashboard"
+                  search={{ tab: f.tab }}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/50 bg-background/90 px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:shadow-xs"
+                >
+                  <f.icon className="h-3.5 w-3.5 text-primary" />
+                  <span>{f.name}</span>
+                </Link>
+              ))}
+            </div>
+            <Link
+              to="/dashboard"
+              className="hidden md:inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+            >
+              Semua Fitur →
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -89,42 +196,148 @@ function Index() {
       <section className="px-5 pb-16 pt-12 md:pt-20">
         <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
           <div>
-            <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">Untuk UMKM kuliner di Bekasi</span>
+            <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+              Spesialis Donat & Cookies Rumahan di Bekasi
+            </span>
             <h1 className="mt-5 text-4xl font-semibold leading-tight md:text-5xl">
-              Usaha kuliner makin rapi, <span className="text-primary">tanpa ribet.</span>
+              Donat lembut & cookies lumer,{" "}
+              <span className="text-primary">bikin nagih tiap gigitan.</span>
             </h1>
             <p className="mt-4 text-base text-muted-foreground md:text-lg">
-              Catat produk, stok, penjualan, sampai laporan keuangan — semua dalam satu tempat yang gampang dipakai.
+              Dibuat fresh setiap hari dari butter premium dan cokelat pilihan. Kelola katalog
+              produk, stok, dan penjualan makin rapi.
             </p>
-            <a href="#kontak" className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:-translate-y-0.5">
-              <MessageCircle className="h-5 w-5" /> Pesan via WhatsApp
-            </a>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <a
+                href="#pesan"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:-translate-y-0.5 hover:opacity-95"
+              >
+                Pesan Sekarang <ArrowRight className="h-4 w-4" />
+              </a>
+              <a
+                href="https://wa.me/6281213141516?text=Halo%20Donat%20%26%20Cookies,%20saya%20tertarik%20dengan%20produk%20Anda"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-3.5 font-semibold text-foreground transition hover:bg-muted"
+              >
+                <MessageCircle className="h-4 w-4 text-emerald-600" /> WhatsApp
+              </a>
+            </div>
           </div>
-          <div className="rounded-2xl bg-card p-5 shadow-xl shadow-primary/10">
-            <p className="text-sm font-semibold">Fitur UMKM Manager</p>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {features.map((f) => (
-                <div key={f.name} className="flex flex-col items-center gap-2 rounded-xl bg-muted p-3 text-center">
-                  <f.icon className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-medium">{f.name}</span>
+
+          {/* Hero Visual Showcase Toko */}
+          <div className="relative">
+            <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-card to-secondary/30 p-4 shadow-2xl shadow-primary/10">
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
+                <img
+                  src="/images/products/donat-bomboloni.jpg"
+                  alt="Donat Bomboloni Nutella Lumer"
+                  className="h-full w-full object-cover transition duration-700 hover:scale-105"
+                />
+                <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-3 py-1 text-xs font-bold text-primary shadow-sm backdrop-blur">
+                  🔥 Best Seller
+                </span>
+                <span className="absolute bottom-3 right-3 rounded-full bg-primary px-3.5 py-1 text-xs font-bold text-primary-foreground shadow-md">
+                  Rp 12.000
+                </span>
+              </div>
+              <div className="mt-4 flex items-center justify-between px-1">
+                <div>
+                  <h3 className="text-base font-bold">Donat Bomboloni Nutella</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Lumer di mulut · Taburan gula salju halus
+                  </p>
                 </div>
-              ))}
+                <div className="flex items-center gap-1 rounded-xl bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600">
+                  <span>★</span> 4.9
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 border-t border-border/50 pt-3">
+                <div className="flex -space-x-2 overflow-hidden">
+                  <img
+                    className="inline-block h-7 w-7 rounded-full ring-2 ring-background object-cover"
+                    src="/images/products/cookies-red-velvet.jpg"
+                    alt="Cookies"
+                  />
+                  <img
+                    className="inline-block h-7 w-7 rounded-full ring-2 ring-background object-cover"
+                    src="/images/products/donat-tiramisu.jpg"
+                    alt="Donat"
+                  />
+                  <img
+                    className="inline-block h-7 w-7 rounded-full ring-2 ring-background object-cover"
+                    src="/images/products/cookies-cokelat.jpg"
+                    alt="Cookies"
+                  />
+                </div>
+                <span className="text-[11px] text-muted-foreground font-medium flex-1">
+                  +5 varian donat & cookies siap dipesan!
+                </span>
+                <a
+                  href="#pesan"
+                  className="rounded-full bg-secondary px-3.5 py-1.5 text-xs font-bold text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition"
+                >
+                  Pesan →
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <Section eyebrow="Contoh produk UMKM" title="Produk unggulan" className="bg-card">
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-          {products.map((p) => (
-            <article key={p.name} className="rounded-2xl border border-border bg-background p-4">
-              <Placeholder label={`Foto ${p.name}`} />
-              <h3 className="mt-4 text-xl font-semibold">{p.name}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-              <p className="mt-4 text-lg font-bold text-primary">{p.price}</p>
-            </article>
-          ))}
-        </div>
+      <Section eyebrow="Menu Pilihan" title="Katalog Donat & Cookies Favorit" className="bg-card">
+        {products.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-border bg-background p-10 text-center">
+            <Package className="mx-auto h-10 w-10 text-muted-foreground/40" />
+            <h3 className="mt-3 text-base font-bold">Katalog Produk Masih Kosong</h3>
+            <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+              Belum ada produk yang diinput. Masuk ke Dashboard untuk menambahkan produk jualan Anda
+              sendiri.
+            </p>
+            <Link
+              to="/dashboard"
+              search={{ tab: "produk" }}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90"
+            >
+              + Input Produk di Dashboard
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            {products.map((p) => (
+              <article
+                key={p.id}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-background p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40"
+              >
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted flex items-center justify-center">
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <ImageIcon className="h-10 w-10 text-muted-foreground/40" />
+                  )}
+                </div>
+                <h3 className="mt-4 text-xl font-semibold tracking-tight">{p.name}</h3>
+                <p className="mt-1 flex-1 text-sm text-muted-foreground">{p.category}</p>
+                <div className="mt-4 flex items-center justify-between pt-2 border-t border-border/40">
+                  <span className="text-lg font-bold text-primary">
+                    Rp {p.price.toLocaleString("id-ID")}
+                  </span>
+                  <a
+                    href="#pesan"
+                    className="rounded-full bg-secondary px-3 py-1.5 text-xs font-semibold text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground"
+                  >
+                    Pesan
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </Section>
 
       <Section eyebrow="Keunggulan" title="Kenapa memilih kami">
@@ -141,10 +354,15 @@ function Index() {
         </div>
       </Section>
 
-      <Section eyebrow="Tentang kami" title="Teman digital UMKM kuliner" className="bg-card">
+      <Section
+        eyebrow="Tentang kami"
+        title="Baking Fresh Setiap Hari untuk Anda"
+        className="bg-card"
+      >
         <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          UMKM Manager hadir di Bekasi untuk membantu pelaku UMKM kuliner mikro dan kecil mengelola usahanya dengan lebih rapi.
-          Kami percaya, mencatat produk, stok, dan keuangan nggak harus rumit — cukup sederhana, praktis, dan bisa dipercaya.
+          Donat & Cookies Bekasi hadir untuk memanjakan lidah Anda dengan donat kentang bertekstur
+          empuk lumer serta artisanal soft cookies ala New York. Dibuat dengan resep istimewa, bahan
+          berkualitas, dan penuh cinta di setiap gigitannya.
         </p>
       </Section>
 
@@ -163,35 +381,118 @@ function Index() {
       </Section>
 
       <Section id="pesan" eyebrow="Form pesanan" title="Yuk, pesan sekarang" className="bg-card">
-        <form onSubmit={(e) => e.preventDefault()} className="grid max-w-xl gap-4 rounded-2xl bg-background p-6">
-          <label className="grid gap-1.5 text-sm font-medium">Nama
-            <input className={field} placeholder="Nama kamu" />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const nama = (form.elements.namedItem("nama") as HTMLInputElement)?.value || "";
+            const produk = (form.elements.namedItem("produk") as HTMLSelectElement)?.value || "";
+            const jumlah = (form.elements.namedItem("jumlah") as HTMLInputElement)?.value || "1";
+            const catatan =
+              (form.elements.namedItem("catatan") as HTMLTextAreaElement)?.value || "";
+            const pesan = encodeURIComponent(
+              `Halo Donat & Cookies Bekasi, saya mau pesan:\n\n*Nama:* ${nama}\n*Produk:* ${produk}\n*Jumlah:* ${jumlah}\n*Catatan:* ${catatan || "-"}`,
+            );
+            window.open(`https://wa.me/6281213141516?text=${pesan}`, "_blank");
+          }}
+          className="grid max-w-xl gap-4 rounded-2xl bg-background p-6 shadow-sm border border-border"
+        >
+          <label className="grid gap-1.5 text-sm font-medium">
+            Nama
+            <input name="nama" required className={field} placeholder="Nama kamu" />
           </label>
-          <label className="grid gap-1.5 text-sm font-medium">Produk
-            <select className={field} defaultValue="">
-              <option value="" disabled>Pilih produk</option>
-              {products.map((p) => <option key={p.name}>{p.name} — {p.price}</option>)}
+          <label className="grid gap-1.5 text-sm font-medium">
+            Produk
+            <select name="produk" required className={field} defaultValue="">
+              <option value="" disabled>
+                Pilih produk
+              </option>
+              {products.length === 0 ? (
+                <option disabled value="">
+                  Belum ada produk (tambahkan di Dashboard)
+                </option>
+              ) : (
+                products.map((p) => (
+                  <option key={p.id} value={`${p.name} (Rp ${p.price.toLocaleString("id-ID")})`}>
+                    {p.name} — Rp {p.price.toLocaleString("id-ID")}
+                  </option>
+                ))
+              )}
             </select>
           </label>
-          <label className="grid gap-1.5 text-sm font-medium">Jumlah
-            <input type="number" min={1} defaultValue={1} className={field} />
+          <label className="grid gap-1.5 text-sm font-medium">
+            Jumlah
+            <input name="jumlah" type="number" min={1} defaultValue={1} className={field} />
           </label>
-          <label className="grid gap-1.5 text-sm font-medium">Catatan
-            <textarea rows={3} className={field} placeholder="Catatan tambahan (opsional)" />
+          <label className="grid gap-1.5 text-sm font-medium">
+            Catatan
+            <textarea
+              name="catatan"
+              rows={3}
+              className={field}
+              placeholder="Catatan tambahan (opsional)"
+            />
           </label>
-          <button className="rounded-full bg-primary py-3.5 font-semibold text-primary-foreground transition hover:opacity-90">Kirim Pesanan</button>
+          <button
+            type="submit"
+            className="flex items-center justify-center gap-2 rounded-full bg-primary py-3.5 font-semibold text-primary-foreground transition hover:opacity-90"
+          >
+            <MessageCircle className="h-5 w-5" /> Kirim Pesanan via WhatsApp
+          </button>
         </form>
       </Section>
 
       <footer id="kontak" className="bg-accent px-5 py-14 text-accent-foreground">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-semibold">Kontak</h2>
-          <ul className="mt-6 grid gap-4 text-sm md:grid-cols-3">
-            <li className="flex gap-3"><MessageCircle className="h-5 w-5 shrink-0" /><span><b>WhatsApp</b><br />{NA}</span></li>
-            <li className="flex gap-3"><Instagram className="h-5 w-5 shrink-0" /><span><b>Instagram</b><br />{NA}</span></li>
-            <li className="flex gap-3"><MapPin className="h-5 w-5 shrink-0" /><span><b>Alamat</b><br />{NA} (Area layanan: Bekasi)</span></li>
+          <h2 className="text-2xl font-semibold">Kontak Kami</h2>
+          <ul className="mt-6 grid gap-6 text-sm md:grid-cols-3">
+            <li className="flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-foreground/10 text-primary">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <b className="block text-base">WhatsApp</b>
+                <a
+                  href="https://wa.me/6281213141516"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-0.5 inline-block text-accent-foreground/90 transition hover:underline hover:text-primary font-medium"
+                >
+                  081213141516
+                </a>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-foreground/10 text-primary">
+                <Instagram className="h-5 w-5" />
+              </div>
+              <div>
+                <b className="block text-base">Instagram</b>
+                <a
+                  href="https://instagram.com/umkmmanager281"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-0.5 inline-block text-accent-foreground/90 transition hover:underline hover:text-primary font-medium"
+                >
+                  @umkmmanager281
+                </a>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-foreground/10 text-primary">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <div>
+                <b className="block text-base">Alamat</b>
+                <span className="mt-0.5 block text-accent-foreground/80 leading-relaxed">
+                  Bekasi, Jawa Barat, Indonesia
+                </span>
+              </div>
+            </li>
           </ul>
-          <p className="mt-10 border-t border-accent-foreground/15 pt-6 text-xs">© {new Date().getFullYear()} UMKM Manager. Sederhana · Praktis · Terpercaya.</p>
+          <p className="mt-10 border-t border-accent-foreground/15 pt-6 text-xs text-accent-foreground/70">
+            © {new Date().getFullYear()} Donat & Cookies Bekasi. Fresh · Lembut · Lumer.
+          </p>
         </div>
       </footer>
     </div>
