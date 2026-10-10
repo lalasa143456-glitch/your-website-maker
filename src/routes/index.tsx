@@ -4,12 +4,7 @@ import {
   Sparkles,
   Zap,
   ShieldCheck,
-  LayoutDashboard,
   Package,
-  Boxes,
-  ShoppingCart,
-  Wallet,
-  FileBarChart,
   MessageCircle,
   Instagram,
   MapPin,
@@ -63,15 +58,6 @@ const reasons = [
   },
 ];
 
-const features = [
-  { icon: LayoutDashboard, name: "Dashboard", tab: "dashboard", desc: "Ringkasan & Metrik" },
-  { icon: Package, name: "Produk", tab: "produk", desc: "Katalog & Menu" },
-  { icon: Boxes, name: "Stok", tab: "stok", desc: "Inventaris Real-time" },
-  { icon: ShoppingCart, name: "Penjualan", tab: "penjualan", desc: "Pesanan Masuk" },
-  { icon: Wallet, name: "Keuangan", tab: "keuangan", desc: "Buku Kas & Laba" },
-  { icon: FileBarChart, name: "Laporan", tab: "laporan", desc: "Analitik Bisnis" },
-];
-
 const faqs = [
   {
     q: "Donat dan cookies dibuat fresh setiap hari?",
@@ -91,15 +77,6 @@ const faqs = [
   },
 ];
 
-function Placeholder({ label }: { label: string }) {
-  return (
-    <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-secondary/60 text-muted-foreground">
-      <ImageIcon className="h-8 w-8 text-primary/60" />
-      <span className="text-xs">{label}</span>
-    </div>
-  );
-}
-
 function Section({
   id,
   eyebrow,
@@ -114,7 +91,7 @@ function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={`px-5 py-16 md:py-24 ${className}`}>
+    <section id={id} className={`scroll-mt-16 px-5 py-16 md:py-24 ${className}`}>
       <div className="mx-auto max-w-5xl">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
         <h2 className="mt-2 text-3xl font-semibold md:text-4xl">{title}</h2>
@@ -140,56 +117,80 @@ function Index() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3.5">
-          <Link to="/" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm text-primary-foreground font-bold">
+          <Link to="/" className="flex items-center gap-2.5 font-semibold transition hover:opacity-90">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm">
               DC
             </span>
-            Donat & Cookies Bekasi
+            <span className="text-base tracking-tight font-bold">Donat & Cookies Bekasi</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="rounded-full bg-primary/10 px-4 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-primary-foreground shadow-sm"
+
+          {/* Navigasi Utama: Produk, Keunggulan, Tentang Kami, FAQ */}
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+            <a
+              href="#produk"
+              className="text-muted-foreground transition hover:text-primary font-medium"
             >
-              Masuk Dashboard →
-            </Link>
-            <a href="#pesan" className="text-sm font-medium text-primary hover:underline">
-              Pesan
+              Produk
+            </a>
+            <a
+              href="#keunggulan"
+              className="text-muted-foreground transition hover:text-primary font-medium"
+            >
+              Keunggulan
+            </a>
+            <a
+              href="#tentang-kami"
+              className="text-muted-foreground transition hover:text-primary font-medium"
+            >
+              Tentang Kami
+            </a>
+            <a
+              href="#faq"
+              className="text-muted-foreground transition hover:text-primary font-medium"
+            >
+              FAQ
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="#pesan"
+              className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 hover:shadow"
+            >
+              Pesan Sekarang
             </a>
           </div>
         </div>
 
-        {/* Fitur Navigation Strip di Bagian Atas */}
-        <div className="border-t border-border/40 bg-muted/30 px-5 py-2">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 overflow-x-auto text-xs">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
-                Fitur Pengelolaan:
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-              {features.map((f) => (
-                <Link
-                  key={f.name}
-                  to="/dashboard"
-                  search={{ tab: f.tab }}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/50 bg-background/90 px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:shadow-xs"
-                >
-                  <f.icon className="h-3.5 w-3.5 text-primary" />
-                  <span>{f.name}</span>
-                </Link>
-              ))}
-            </div>
-            <Link
-              to="/dashboard"
-              className="hidden md:inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
-            >
-              Semua Fitur →
-            </Link>
-          </div>
-        </div>
+        {/* Navigasi Mobile Bar */}
+        <nav className="flex md:hidden items-center justify-center gap-5 border-t border-border/40 bg-muted/25 px-4 py-2 text-xs font-medium">
+          <a
+            href="#produk"
+            className="text-muted-foreground transition hover:text-primary"
+          >
+            Produk
+          </a>
+          <a
+            href="#keunggulan"
+            className="text-muted-foreground transition hover:text-primary"
+          >
+            Keunggulan
+          </a>
+          <a
+            href="#tentang-kami"
+            className="text-muted-foreground transition hover:text-primary"
+          >
+            Tentang Kami
+          </a>
+          <a
+            href="#faq"
+            className="text-muted-foreground transition hover:text-primary"
+          >
+            FAQ
+          </a>
+        </nav>
       </header>
 
       {/* Hero */}
@@ -204,8 +205,8 @@ function Index() {
               <span className="text-primary">bikin nagih tiap gigitan.</span>
             </h1>
             <p className="mt-4 text-base text-muted-foreground md:text-lg">
-              Dibuat fresh setiap hari dari butter premium dan cokelat pilihan. Kelola katalog
-              produk, stok, dan penjualan makin rapi.
+              Dibuat fresh setiap hari dari butter premium dan cokelat pilihan. Nikmati kelembutan
+              donat dan lelehan cookies spesial untuk menemani hari Anda.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a
@@ -285,22 +286,22 @@ function Index() {
         </div>
       </section>
 
-      <Section eyebrow="Menu Pilihan" title="Katalog Donat & Cookies Favorit" className="bg-card">
+      <Section id="produk" eyebrow="Menu Pilihan" title="Katalog Donat & Cookies Favorit" className="bg-card">
         {products.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-border bg-background p-10 text-center">
             <Package className="mx-auto h-10 w-10 text-muted-foreground/40" />
             <h3 className="mt-3 text-base font-bold">Katalog Produk Masih Kosong</h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
-              Belum ada produk yang diinput. Masuk ke Dashboard untuk menambahkan produk jualan Anda
-              sendiri.
+              Belum ada produk yang ditampilkan saat ini. Silakan hubungi kami untuk informasi menu terbaru.
             </p>
-            <Link
-              to="/dashboard"
-              search={{ tab: "produk" }}
+            <a
+              href="https://wa.me/6281213141516?text=Halo%20Donat%20%26%20Cookies,%20saya%20tertarik%20dengan%20produk%20Anda"
+              target="_blank"
+              rel="noreferrer"
               className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90"
             >
-              + Input Produk di Dashboard
-            </Link>
+              <MessageCircle className="h-4 w-4" /> Hubungi via WhatsApp
+            </a>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
@@ -340,7 +341,7 @@ function Index() {
         )}
       </Section>
 
-      <Section eyebrow="Keunggulan" title="Kenapa memilih kami">
+      <Section id="keunggulan" eyebrow="Keunggulan" title="Kenapa memilih kami">
         <div className="grid gap-5 md:grid-cols-3">
           {reasons.map((r) => (
             <div key={r.title} className="rounded-2xl bg-card p-6 shadow-sm">
@@ -355,6 +356,7 @@ function Index() {
       </Section>
 
       <Section
+        id="tentang-kami"
         eyebrow="Tentang kami"
         title="Baking Fresh Setiap Hari untuk Anda"
         className="bg-card"
@@ -366,7 +368,7 @@ function Index() {
         </p>
       </Section>
 
-      <Section eyebrow="FAQ" title="Pertanyaan yang sering ditanya">
+      <Section id="faq" eyebrow="FAQ" title="Pertanyaan yang sering ditanya">
         <div className="space-y-3">
           {faqs.map((f) => (
             <details key={f.q} className="group rounded-xl bg-card p-5 shadow-sm">
@@ -409,7 +411,7 @@ function Index() {
               </option>
               {products.length === 0 ? (
                 <option disabled value="">
-                  Belum ada produk (tambahkan di Dashboard)
+                  Belum ada produk tersedia
                 </option>
               ) : (
                 products.map((p) => (
