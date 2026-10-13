@@ -3,6 +3,9 @@ import { Product, Order, CashTransaction } from "./database";
 const DEFAULT_GAS_URL =
   (import.meta.env["VITE_GOOGLE_APPS_SCRIPT_URL"] as string) ||
   "https://script.google.com/macros/s/AKfycbyZh6AAHsau1DJS5w3XOJiSCdVIZ3vrCkju2pFa7b733Qpd_Ocp6X78zx6LyzGyOFdG/exec";
+const DEFAULT_DOC_URL =
+  (import.meta.env["VITE_GOOGLE_SHEET_DOC_URL"] as string) ||
+  "https://docs.google.com/spreadsheets/d/17B2bqrxO5N7HtJ6OUUJgvqlDvqCW9hI5JJT0y3Ifduo/edit";
 const GAS_URL_STORAGE_KEY = "umkm_google_sheets_url";
 const GOOGLE_DOC_URL_STORAGE_KEY = "umkm_google_sheet_doc_url";
 
@@ -18,8 +21,8 @@ export const googleSheets = {
   },
 
   getDocUrl(): string {
-    if (typeof window === "undefined") return "";
-    return localStorage.getItem(GOOGLE_DOC_URL_STORAGE_KEY) || "";
+    if (typeof window === "undefined") return DEFAULT_DOC_URL;
+    return localStorage.getItem(GOOGLE_DOC_URL_STORAGE_KEY) || DEFAULT_DOC_URL;
   },
 
   setDocUrl(url: string): void {
