@@ -43,13 +43,13 @@ interface ColumnDef {
 }
 
 export function SpreadsheetView({
-  initialSheet = "products",
+  initialSheet = "orders",
   onDataChanged,
 }: {
   initialSheet?: SheetType;
   onDataChanged?: () => void;
 }) {
-  const [activeSheet, setActiveSheet] = useState<SheetType>(initialSheet);
+  const [activeSheet, setActiveSheet] = useState<SheetType>("orders");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>({
@@ -82,6 +82,23 @@ export function SpreadsheetView({
   const [orderRows, setOrderRows] = useState<string[][]>([]);
   const [cashflowRows, setCashflowRows] = useState<string[][]>([]);
   const [customRows, setCustomRows] = useState<string[][]>([]);
+
+  // Quick summary calculations for orders
+  const totalOrderOmzet = useMemo(() => {
+    return orderRows.reduce((acc, r) => {
+      const val = evaluateCell(r[3] || "0", orderRows).display;
+      const num = parseFloat(val.replace(/[^0-9.-]/g, "")) || 0;
+      return acc + num;
+    }, 0);
+  }, [orderRows]);
+
+  const orderCountSelesai = useMemo(() => {
+    return orderRows.filter((r) => r[4] === "Selesai").length;
+  }, [orderRows]);
+
+  const orderCountProses = useMemo(() => {
+    return orderRows.filter((r) => r[4] === "Proses" || r[4] === "Pending").length;
+  }, [orderRows]);
 
   // Column Definitions for each sheet
   const productCols: ColumnDef[] = [
@@ -479,54 +496,22 @@ export function SpreadsheetView({
   // Save changes to UMKM store database
   const saveToDatabase = () => {
     try {
-      if (activeSheet === "products") {
-        const mappedProducts: Product[] = productRows.map((r, idx) => {
-          const priceRaw = evaluateCell(r[3] || "0", productRows).display;
-          const stockRaw = evaluateCell(r[4] || "0", productRows).display;
-          const soldRaw = evaluateCell(r[5] || "0", productRows).display;
-          return {
-            id: r[0] || getNextSequentialId(productRows.slice(0, idx).map((row) => ({ id: row[0] })), "PRD"),
-            name: r[1] || "Produk",
-            category: r[2] || "Umum",
-            price: Math.max(0, parseInt(priceRaw.replace(/\D/g, ""), 10) || 0),
-            stock: Math.max(0, parseInt(stockRaw.replace(/\D/g, ""), 10) || 0),
-            sold: Math.max(0, parseInt(soldRaw.replace(/\D/g, ""), 10) || 0),
-            image: "",
-            createdAt: new Date().toISOString(),
-          };
-        });
-        db.setProducts(mappedProducts);
-      } else if (activeSheet === "orders") {
-        const mappedOrders: Order[] = orderRows.map((r, idx) => {
-          const totalRaw = evaluateCell(r[3] || "0", orderRows).display;
-          return {
-            id: r[0] || getNextSequentialId(orderRows.slice(0, idx).map((row) => ({ id: row[0] })), "ORD"),
-            customer: r[1] || "Pelanggan",
-            product: r[2] || "Pesanan",
-            total: Math.max(0, parseInt(totalRaw.replace(/\D/g, ""), 10) || 0),
-            status: (r[4] as Order["status"]) || "Proses",
-            date: r[5] || "Hari Ini",
-            notes: r[6] || "",
-          };
-        });
-        db.setOrders(mappedOrders);
-      } else if (activeSheet === "cashflow") {
-        const mappedCash: CashTransaction[] = cashflowRows.map((r, idx) => {
-          const amountRaw = evaluateCell(r[4] || "0", cashflowRows).display;
-          return {
-            id: r[0] || getNextSequentialId(cashflowRows.slice(0, idx).map((row) => ({ id: row[0] })), "TX"),
-            desc: r[1] || "Transaksi",
-            type: (r[2] === "out" ? "out" : "in") as "in" | "out",
-            category: r[3] || "Umum",
-            amount: Math.max(0, parseInt(amountRaw.replace(/\D/g, ""), 10) || 0),
-            date: r[5] || "Hari Ini",
-          };
-        });
-        db.setCashflow(mappedCash);
-      }
+      const mappedOrders: Order[] = orderRows.map((r, idx) => {
+        const totalRaw = evaluateCell(r[3] || "0", orderRows).display;
+        return {
+          id: r[0] || getNextSequentialId(orderRows.slice(0, idx).map((row) => ({ id: row[0] })), "ORD"),
+          customer: r[1] || "Pelanggan",
+          product: r[2] || "Pesanan",
+          total: Math.max(0, parseInt(totalRaw.replace(/\D/g, ""), 10) || 0),
+          status: (r[4] as Order["status"]) || "Proses",
+          date: r[5] || "Hari Ini",
+          notes: r[6] || "",
+        };
+      });
+      db.setOrders(mappedOrders);
 
       setHasUnsavedChanges(false);
-      showNotice("✅ Perubahan spreadsheet berhasil disimpan ke database toko & Supabase!");
+      showNotice("✅ Perubahan spreadsheet pesanan berhasil disimpan ke database toko & Supabase!");
       if (onDataChanged) onDataChanged();
     } catch (err) {
       console.error(err);
@@ -536,24 +521,27 @@ export function SpreadsheetView({
 
   // Add Row
   const handleAddRow = () => {
-    let newId = "";
-    if (activeSheet === "products") {
-      newId = getNextSequentialId(productRows.map((r) => ({ id: r[0] })), "PRD");
-    } else if (activeSheet === "orders") {
-      newId = getNextSequentialId(orderRows.map((r) => ({ id: r[0] })), "ORD");
-    } else if (activeSheet === "cashflow") {
-      newId = getNextSequentialId(cashflowRows.map((r) => ({ id: r[0] })), "TX");
-    }
-
-    const emptyRow = activeCols.map((c, i) => {
-      if (i === 0) return newId;
-      if (c.type === "currency" || c.type === "number") return "0";
-      if (c.type === "select" && c.options) return c.options[0] || "";
-      return "";
+    const newId = getNextSequentialId(orderRows.map((r) => ({ id: r[0] })), "ORD");
+    const nowStr = new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    const newRows = [...activeRows, emptyRow];
-    setActiveRows(newRows);
+    const newRow = [
+      newId,
+      "Pelanggan Baru",
+      "Menu Donat / Cookies",
+      "0",
+      "Proses",
+      nowStr,
+      "",
+    ];
+
+    const newRows = [...orderRows, newRow];
+    setOrderRows(newRows);
+    setHasUnsavedChanges(true);
     setSelectedCell({ row: newRows.length - 1, col: 1 });
   };
 
@@ -670,11 +658,11 @@ export function SpreadsheetView({
 
   // CSV Export
   const handleExportCSV = () => {
-    const headers = activeCols.map((c) => `"${c.header.replace(/"/g, '""')}"`).join(",");
-    const rows = activeRows.map((r) =>
+    const headers = orderCols.map((c) => `"${c.header.replace(/"/g, '""')}"`).join(",");
+    const rows = orderRows.map((r) =>
       r
         .map((cell) => {
-          const evalResult = evaluateCell(cell, activeRows).display;
+          const evalResult = evaluateCell(cell, orderRows).display;
           return `"${(evalResult || "").replace(/"/g, '""')}"`;
         })
         .join(","),
@@ -685,10 +673,10 @@ export function SpreadsheetView({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `spreadsheet_umkm_${activeSheet}_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `spreadsheet_pesanan_penjualan_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    showNotice(`File CSV untuk sheet ${activeSheet} berhasil diekspor.`);
+    showNotice(`File CSV Pesanan & Penjualan berhasil diekspor.`);
   };
 
   // CSV Import
@@ -805,15 +793,15 @@ export function SpreadsheetView({
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      {/* 1. TOP HEADER & SHEET TABS */}
+      {/* 1. TOP HEADER */}
       <div className="flex flex-wrap items-center justify-between border-b border-border bg-muted/30 px-4 py-3 gap-3">
         <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/20">
-            <FileSpreadsheet className="h-5 w-5" />
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/20">
+            <ShoppingCart className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold tracking-tight">Spreadsheet UMKM Excel</h2>
+              <h2 className="text-base font-bold tracking-tight">Spreadsheet Pesanan & Penjualan</h2>
               {hasUnsavedChanges ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -827,7 +815,7 @@ export function SpreadsheetView({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Edit tabel data produk, pesanan, kasir & rumus hitung otomatis seperti Excel.
+              Tabel pencatatan langsung pesanan masuk, status transaksi & omzet terhubung ke Google Sheets.
             </p>
           </div>
         </div>
@@ -930,79 +918,47 @@ export function SpreadsheetView({
         </div>
       </div>
 
-      {/* 2. SHEET SELECTOR TABS */}
-      <div className="flex border-b border-border bg-background px-4 py-1.5 gap-2 overflow-x-auto">
-        <button
-          onClick={() => {
-            setActiveSheet("products");
-            setSelectedCell({ row: 0, col: 1 });
-          }}
-          className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            activeSheet === "products"
-              ? "bg-emerald-600/10 text-emerald-700 border border-emerald-500/30 dark:text-emerald-300"
-              : "text-muted-foreground hover:bg-muted"
-          }`}
-        >
-          <Package className="h-3.5 w-3.5" />
-          <span>Katalog Produk & Stok</span>
-          <span className="rounded-full bg-muted px-1.5 py-0.2 text-[10px] text-muted-foreground">
-            {productRows.length}
-          </span>
-        </button>
+      {/* 2. SUMMARY & FILTER STATS BAR */}
+      <div className="flex flex-wrap items-center justify-between border-b border-border bg-background px-4 py-2 gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600/10 border border-blue-500/30 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
+            <ShoppingCart className="h-3.5 w-3.5 text-blue-600" />
+            <span>Sheet Pesanan & Penjualan</span>
+            <span className="rounded-full bg-blue-600/20 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+              {orderRows.length} Data
+            </span>
+          </div>
 
-        <button
-          onClick={() => {
-            setActiveSheet("orders");
-            setSelectedCell({ row: 0, col: 1 });
-          }}
-          className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            activeSheet === "orders"
-              ? "bg-emerald-600/10 text-emerald-700 border border-emerald-500/30 dark:text-emerald-300"
-              : "text-muted-foreground hover:bg-muted"
-          }`}
-        >
-          <ShoppingCart className="h-3.5 w-3.5" />
-          <span>Pesanan & Penjualan</span>
-          <span className="rounded-full bg-muted px-1.5 py-0.2 text-[10px] text-muted-foreground">
-            {orderRows.length}
-          </span>
-        </button>
+          <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground border-l border-border pl-3">
+            <span>
+              Total Omzet:{" "}
+              <strong className="text-foreground">
+                Rp {totalOrderOmzet.toLocaleString("id-ID")}
+              </strong>
+            </span>
+            <span className="text-muted-foreground/30">•</span>
+            <span>
+              Selesai:{" "}
+              <strong className="text-emerald-600 font-semibold">{orderCountSelesai}</strong>
+            </span>
+            <span className="text-muted-foreground/30">•</span>
+            <span>
+              Proses:{" "}
+              <strong className="text-blue-600 font-semibold">{orderCountProses}</strong>
+            </span>
+          </div>
+        </div>
 
-        <button
-          onClick={() => {
-            setActiveSheet("cashflow");
-            setSelectedCell({ row: 0, col: 1 });
-          }}
-          className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            activeSheet === "cashflow"
-              ? "bg-emerald-600/10 text-emerald-700 border border-emerald-500/30 dark:text-emerald-300"
-              : "text-muted-foreground hover:bg-muted"
-          }`}
-        >
-          <Wallet className="h-3.5 w-3.5" />
-          <span>Arus Kas & Keuangan</span>
-          <span className="rounded-full bg-muted px-1.5 py-0.2 text-[10px] text-muted-foreground">
-            {cashflowRows.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveSheet("custom");
-            setSelectedCell({ row: 0, col: 0 });
-          }}
-          className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            activeSheet === "custom"
-              ? "bg-emerald-600/10 text-emerald-700 border border-emerald-500/30 dark:text-emerald-300"
-              : "text-muted-foreground hover:bg-muted"
-          }`}
-        >
-          <TableIcon className="h-3.5 w-3.5" />
-          <span>Lembar Bebas (Custom Sheet)</span>
-          <span className="rounded-full bg-muted px-1.5 py-0.2 text-[10px] text-muted-foreground">
-            Formula
-          </span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleAddRow}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 transition cursor-pointer"
+            title="Tambah Baris Pesanan Baru (ORD-00X)"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Tambah Pesanan</span>
+          </button>
+        </div>
       </div>
 
       {/* Feedback Alert Banner */}
@@ -1347,7 +1303,7 @@ export function SpreadsheetView({
             Total: <b>{activeRows.length} Baris</b>
           </span>
           <span className="hidden sm:inline">
-            Sheet Aktif: <b className="text-foreground capitalize">{activeSheet}</b>
+            Sheet Aktif: <b className="text-foreground">Pesanan & Penjualan</b>
           </span>
           <span className="text-[11px] text-muted-foreground">
             💡 Klik dua kali sel atau tekan <b>Enter</b> untuk mengedit langsung
