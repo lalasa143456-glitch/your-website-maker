@@ -257,7 +257,9 @@ function menuAddOrder() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   initSheetsIfNotExist(ss);
 
-  var orderId = "ORD-" + Math.floor(1000 + Math.random() * 9000);
+  var orderSheet = ss.getSheetByName(SHEET_ORDERS);
+  var nextOrderNum = orderSheet && orderSheet.getLastRow() >= 1 ? orderSheet.getLastRow() : 1;
+  var orderId = "ORD-" + ("000" + nextOrderNum).slice(-3);
   var nowStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "dd MMM yyyy, HH:mm");
 
   appendSingleOrder(ss, {
@@ -272,8 +274,10 @@ function menuAddOrder() {
 
   var cashSheet = ss.getSheetByName(SHEET_CASHFLOW);
   if (cashSheet) {
+    var nextCashNum = cashSheet.getLastRow() >= 1 ? cashSheet.getLastRow() : 1;
+    var cashId = "TX-" + ("000" + nextCashNum).slice(-3);
     cashSheet.appendRow([
-      "TX-" + Math.floor(1000 + Math.random() * 9000),
+      cashId,
       "Penjualan " + orderId + " (" + customer + ")",
       "in",
       "Penjualan",
@@ -429,7 +433,7 @@ function writeProductsToSheet(ss, products) {
   var rows = products.map(function(p, idx) {
     var rowNum = idx + 2;
     return [
-      p.id || ("PRD-" + rowNum),
+      p.id || ("PRD-" + ("000" + (idx + 1)).slice(-3)),
       p.name || "",
       p.category || "Umum",
       Number(p.price) || 0,
@@ -451,9 +455,9 @@ function writeOrdersToSheet(ss, orders) {
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
   if (orders.length === 0) return;
 
-  var rows = orders.map(function(o) {
+  var rows = orders.map(function(o, idx) {
     return [
-      o.id || "",
+      o.id || ("ORD-" + ("000" + (idx + 1)).slice(-3)),
       o.customer || "",
       o.product || "",
       Number(o.total) || 0,
@@ -473,9 +477,9 @@ function writeCashflowToSheet(ss, cashflow) {
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 6).clearContent();
   if (cashflow.length === 0) return;
 
-  var rows = cashflow.map(function(c) {
+  var rows = cashflow.map(function(c, idx) {
     return [
-      c.id || "",
+      c.id || ("TX-" + ("000" + (idx + 1)).slice(-3)),
       c.desc || "",
       c.type || "in",
       c.category || "Umum",
@@ -490,8 +494,10 @@ function writeCashflowToSheet(ss, cashflow) {
 function appendSingleOrder(ss, order) {
   var sheet = ss.getSheetByName(SHEET_ORDERS);
   if (!sheet) return;
+  var nextNum = sheet.getLastRow() >= 1 ? sheet.getLastRow() : 1;
+  var fallbackId = "ORD-" + ("000" + nextNum).slice(-3);
   sheet.appendRow([
-    order.id || ("ORD-" + Date.now()),
+    order.id || fallbackId,
     order.customer || "Pelanggan Baru",
     order.product || "Pesanan Produk",
     Number(order.total) || 0,

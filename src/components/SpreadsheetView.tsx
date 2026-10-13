@@ -26,7 +26,7 @@ import {
   RefreshCw,
   Code2,
 } from "lucide-react";
-import { db, Product, Order, CashTransaction } from "@/lib/database";
+import { db, Product, Order, CashTransaction, getNextSequentialId } from "@/lib/database";
 import { googleSheets, GOOGLE_APPS_SCRIPT_CODE } from "@/lib/googleSheets";
 
 export type SheetType = "products" | "orders" | "cashflow" | "custom";
@@ -220,7 +220,7 @@ export function SpreadsheetView({
       String(p.sold),
       `=D${prods.indexOf(p) + 2}*E${prods.indexOf(p) + 2}`, // Auto formula Nilai Stok = Harga * Stok
     ]);
-    setProductRows(pRows.length ? pRows : [["PRD-01", "Contoh Produk Baru", "Donat", "10000", "20", "0", "=D2*E2"]]);
+    setProductRows(pRows.length ? pRows : [["PRD-001", "Contoh Produk Baru", "Donat", "10000", "20", "0", "=D2*E2"]]);
 
     // Map Orders
     const oRows = orders.map((o) => [
@@ -243,7 +243,7 @@ export function SpreadsheetView({
       String(c.amount),
       c.date,
     ]);
-    setCashflowRows(cRows.length ? cRows : [["TX-101", "Modal Kas Awal", "in", "Modal", "200000", "Hari Ini"]]);
+    setCashflowRows(cRows.length ? cRows : [["TX-001", "Modal Kas Awal", "in", "Modal", "200000", "Hari Ini"]]);
 
     // Initialize custom sheet if empty
     if (customRows.length === 0) {
@@ -480,12 +480,12 @@ export function SpreadsheetView({
   const saveToDatabase = () => {
     try {
       if (activeSheet === "products") {
-        const mappedProducts: Product[] = productRows.map((r) => {
+        const mappedProducts: Product[] = productRows.map((r, idx) => {
           const priceRaw = evaluateCell(r[3] || "0", productRows).display;
           const stockRaw = evaluateCell(r[4] || "0", productRows).display;
           const soldRaw = evaluateCell(r[5] || "0", productRows).display;
           return {
-            id: r[0] || `PRD-${Date.now().toString(36).toUpperCase()}`,
+            id: r[0] || getNextSequentialId(productRows.slice(0, idx).map((row) => ({ id: row[0] })), "PRD"),
             name: r[1] || "Produk",
             category: r[2] || "Umum",
             price: Math.max(0, parseInt(priceRaw.replace(/\D/g, ""), 10) || 0),
@@ -497,10 +497,10 @@ export function SpreadsheetView({
         });
         db.setProducts(mappedProducts);
       } else if (activeSheet === "orders") {
-        const mappedOrders: Order[] = orderRows.map((r) => {
+        const mappedOrders: Order[] = orderRows.map((r, idx) => {
           const totalRaw = evaluateCell(r[3] || "0", orderRows).display;
           return {
-            id: r[0] || `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+            id: r[0] || getNextSequentialId(orderRows.slice(0, idx).map((row) => ({ id: row[0] })), "ORD"),
             customer: r[1] || "Pelanggan",
             product: r[2] || "Pesanan",
             total: Math.max(0, parseInt(totalRaw.replace(/\D/g, ""), 10) || 0),
@@ -511,10 +511,10 @@ export function SpreadsheetView({
         });
         db.setOrders(mappedOrders);
       } else if (activeSheet === "cashflow") {
-        const mappedCash: CashTransaction[] = cashflowRows.map((r) => {
+        const mappedCash: CashTransaction[] = cashflowRows.map((r, idx) => {
           const amountRaw = evaluateCell(r[4] || "0", cashflowRows).display;
           return {
-            id: r[0] || `TX-${Math.floor(1000 + Math.random() * 9000)}`,
+            id: r[0] || getNextSequentialId(cashflowRows.slice(0, idx).map((row) => ({ id: row[0] })), "TX"),
             desc: r[1] || "Transaksi",
             type: (r[2] === "out" ? "out" : "in") as "in" | "out",
             category: r[3] || "Umum",
@@ -536,12 +536,17 @@ export function SpreadsheetView({
 
   // Add Row
   const handleAddRow = () => {
+    let newId = "";
+    if (activeSheet === "products") {
+      newId = getNextSequentialId(productRows.map((r) => ({ id: r[0] })), "PRD");
+    } else if (activeSheet === "orders") {
+      newId = getNextSequentialId(orderRows.map((r) => ({ id: r[0] })), "ORD");
+    } else if (activeSheet === "cashflow") {
+      newId = getNextSequentialId(cashflowRows.map((r) => ({ id: r[0] })), "TX");
+    }
+
     const emptyRow = activeCols.map((c, i) => {
-      if (i === 0) {
-        if (activeSheet === "products") return `PRD-${Date.now().toString(36).toUpperCase()}`;
-        if (activeSheet === "orders") return `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
-        if (activeSheet === "cashflow") return `TX-${Math.floor(1000 + Math.random() * 9000)}`;
-      }
+      if (i === 0) return newId;
       if (c.type === "currency" || c.type === "number") return "0";
       if (c.type === "select" && c.options) return c.options[0] || "";
       return "";

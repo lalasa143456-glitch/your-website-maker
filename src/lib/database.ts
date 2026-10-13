@@ -39,7 +39,7 @@ const STORAGE_KEYS = {
 
 export const DEFAULT_PRODUCTS: Product[] = [
   {
-    id: "PRD-DONAT-1",
+    id: "PRD-001",
     name: "Donat Klasik Gula Salju",
     category: "Donat",
     price: 8000,
@@ -49,7 +49,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "PRD-DONAT-2",
+    id: "PRD-002",
     name: "Donat Bomboloni Nutella Lumer",
     category: "Donat",
     price: 12000,
@@ -59,7 +59,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "PRD-DONAT-3",
+    id: "PRD-003",
     name: "Donat Tiramisu Almond Crunch",
     category: "Donat",
     price: 11000,
@@ -69,7 +69,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "PRD-COOKIE-1",
+    id: "PRD-004",
     name: "Classic Choco Chip Cookies",
     category: "Cookies",
     price: 15000,
@@ -79,7 +79,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "PRD-COOKIE-2",
+    id: "PRD-005",
     name: "Red Velvet Marshmallow Cookies",
     category: "Cookies",
     price: 18000,
@@ -89,7 +89,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "PRD-COOKIE-3",
+    id: "PRD-006",
     name: "Matcha White Choco Cookies",
     category: "Cookies",
     price: 16000,
@@ -104,7 +104,7 @@ export const DEFAULT_ORDERS: Order[] = [];
 
 export const DEFAULT_CASHFLOW: CashTransaction[] = [
   {
-    id: "TX-101",
+    id: "TX-001",
     desc: "Saldo / Modal Kas Awal Toko",
     type: "in",
     amount: 500000,
@@ -112,7 +112,7 @@ export const DEFAULT_CASHFLOW: CashTransaction[] = [
     category: "Modal",
   },
   {
-    id: "TX-102",
+    id: "TX-002",
     desc: "Beli Tepung Terigu Protein Sedang & Mentega",
     type: "out",
     amount: 65000,
@@ -120,6 +120,19 @@ export const DEFAULT_CASHFLOW: CashTransaction[] = [
     category: "Bahan Baku",
   },
 ];
+
+// Helper untuk membuat ID berurutan rapi: ORD-001, PRD-001, TX-001, dst.
+export function getNextSequentialId(list: Array<{ id?: string | null | undefined }>, prefix: string): string {
+  let maxNum = 0;
+  for (const item of list) {
+    if (!item || !item.id) continue;
+    const num = parseInt(item.id.replace(/\D/g, ""), 10);
+    if (!isNaN(num) && num > maxNum) {
+      maxNum = num;
+    }
+  }
+  return `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
+}
 
 // Event emitter to notify React components across the app
 export const DB_UPDATED_EVENT = "umkm_database_updated";
@@ -296,7 +309,7 @@ export const db = {
   }): Product {
     const list = this.getProducts();
     const newProduct: Product = {
-      id: "PRD-" + Date.now().toString(36).toUpperCase(),
+      id: getNextSequentialId(list, "PRD"),
       name: input.name,
       category: input.category || "Umum",
       price: input.price,
@@ -392,7 +405,7 @@ export const db = {
     });
 
     const newOrder: Order = {
-      id: "ORD-" + Math.floor(1000 + Math.random() * 9000),
+      id: getNextSequentialId(list, "ORD"),
       customer: input.customer,
       product: input.product,
       total: input.total,
@@ -488,7 +501,7 @@ export const db = {
     });
 
     const newTx: CashTransaction = {
-      id: "TX-" + Math.floor(1000 + Math.random() * 9000),
+      id: getNextSequentialId(list, "TX"),
       desc: input.desc,
       type: input.type,
       amount: input.amount,
