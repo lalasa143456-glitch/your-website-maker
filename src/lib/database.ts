@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from "./supabase";
+import { googleSheets } from "./googleSheets";
 
 export interface Product {
   id: string;
@@ -449,6 +450,9 @@ export const db = {
       category: "Penjualan",
     });
 
+    // Otomatis catat ke Google Sheets jika terhubung
+    googleSheets.appendOrder(newOrder);
+
     return newOrder;
   },
   updateOrderStatus(id: string, status: Order["status"]) {
@@ -575,6 +579,67 @@ export const db = {
           supabase.from("cashflow").delete().neq("id", ""),
         ]).catch((err) => console.warn("Supabase clear error:", err));
       }
+    }
+  },
+  // BULK SETTERS (Untuk Spreadsheet & Batch Import)
+  setProducts(products: Product[]): void {
+    setItem(STORAGE_KEYS.PRODUCTS, products);
+    if (isSupabaseConfigured() && supabase) {
+      const payload = products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        price: p.price,
+        stock: p.stock,
+        sold: p.sold,
+        image: p.image || "",
+        created_at: p.createdAt || new Date().toISOString(),
+      }));
+      supabase
+        .from("products")
+        .upsert(payload)
+        .then(({ error }) => {
+          if (error) console.error("Gagal sinkron produk ke Supabase:", error);
+        });
+    }
+  },
+  setOrders(orders: Order[]): void {
+    setItem(STORAGE_KEYS.ORDERS, orders);
+    if (isSupabaseConfigured() && supabase) {
+      const payload = orders.map((o) => ({
+        id: o.id,
+        customer: o.customer,
+        product: o.product,
+        total: o.total,
+        date: o.date,
+        status: o.status,
+        notes: o.notes || "",
+      }));
+      supabase
+        .from("orders")
+        .upsert(payload)
+        .then(({ error }) => {
+          if (error) console.error("Gagal sinkron pesanan ke Supabase:", error);
+        });
+    }
+  },
+  setCashflow(cashflow: CashTransaction[]): void {
+    setItem(STORAGE_KEYS.CASHFLOW, cashflow);
+    if (isSupabaseConfigured() && supabase) {
+      const payload = cashflow.map((c) => ({
+        id: c.id,
+        desc: c.desc,
+        type: c.type,
+        amount: c.amount,
+        date: c.date,
+        category: c.category,
+      }));
+      supabase
+        .from("cashflow")
+        .upsert(payload)
+        .then(({ error }) => {
+          if (error) console.error("Gagal sinkron kas ke Supabase:", error);
+        });
     }
   },
   seedBakeryData() {

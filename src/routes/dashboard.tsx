@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   Cloud,
   ExternalLink,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   db,
@@ -33,6 +34,8 @@ import {
   DEFAULT_ORDERS,
   DEFAULT_CASHFLOW,
 } from "@/lib/database";
+import { googleSheets } from "@/lib/googleSheets";
+import { SpreadsheetView } from "@/components/SpreadsheetView";
 
 export const Route = createFileRoute("/dashboard")({
   validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
@@ -41,7 +44,14 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
 
-type TabType = "dashboard" | "produk" | "stok" | "penjualan" | "keuangan" | "laporan";
+type TabType =
+  | "dashboard"
+  | "produk"
+  | "stok"
+  | "penjualan"
+  | "keuangan"
+  | "laporan"
+  | "spreadsheet";
 
 function DashboardPage() {
   const search = useSearch({ from: "/dashboard" });
@@ -69,7 +79,15 @@ function DashboardPage() {
   useEffect(() => {
     if (
       search.tab &&
-      ["dashboard", "produk", "stok", "penjualan", "keuangan", "laporan"].includes(search.tab)
+      [
+        "dashboard",
+        "produk",
+        "stok",
+        "penjualan",
+        "keuangan",
+        "laporan",
+        "spreadsheet",
+      ].includes(search.tab)
     ) {
       setActiveTab(search.tab as TabType);
     }
@@ -202,6 +220,12 @@ function DashboardPage() {
     },
     { id: "keuangan" as TabType, name: "Keuangan & Kas", icon: Wallet, badge: "" },
     { id: "laporan" as TabType, name: "Laporan Bisnis", icon: FileBarChart, badge: "" },
+    {
+      id: "spreadsheet" as TabType,
+      name: "Spreadsheet Excel",
+      icon: FileSpreadsheet,
+      badge: "Excel Grid",
+    },
   ];
 
   return (
@@ -364,6 +388,14 @@ function DashboardPage() {
                 Mode Lokal (Klik Setup Cloud)
               </button>
             )}
+
+            {googleSheets.isConfigured() && (
+              <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 lg:inline-flex">
+                <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
+                Google Sheets Terhubung
+              </span>
+            )}
+
             <button
               onClick={() => {
                 if (activeTab === "produk" || activeTab === "stok") setModalType("product");
@@ -466,6 +498,37 @@ function DashboardPage() {
                   <p className="mt-1 text-xs text-amber-600 font-medium">
                     {lowStockCount ? "Perlu restock segera" : "Stok terkendali"}
                   </p>
+                </div>
+              </div>
+
+              {/* Spreadsheet Feature Banner CTA */}
+              <div className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-5 sm:p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25">
+                      <FileSpreadsheet className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-base text-foreground">
+                          Spreadsheet Excel Toko Interaktif
+                        </h4>
+                        <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-bold">
+                          Fitur Baru
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 max-w-xl leading-relaxed">
+                        Kelola katalog produk, stok, pesanan pelanggan, dan kasir dalam tampilan tabel spreadsheet layaknya Excel / Google Sheets. Lengkap dengan rumus otomatis (SUM, AVG, perkalian), impor/ekspor CSV, dan simpan langsung ke database toko.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("spreadsheet")}
+                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 shrink-0 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="h-4 w-4" />
+                    <span>Buka Spreadsheet Toko</span>
+                  </button>
                 </div>
               </div>
 
@@ -967,6 +1030,13 @@ function DashboardPage() {
                   Reset ke Data Donat & Cookies
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* TAB 7: SPREADSHEET */}
+          {activeTab === "spreadsheet" && (
+            <div className="space-y-6">
+              <SpreadsheetView onDataChanged={reloadData} />
             </div>
           )}
         </main>
