@@ -88,26 +88,21 @@ alter publication supabase_realtime add table public.orders;
 alter publication supabase_realtime add table public.cashflow;
 
 -- ===============================================================
--- Data Awal Sampel (Sample Data) - Donat & Cookies Spesial
+-- Data Awal Produk & Kas (Sesuai Database Terkini)
 -- ===============================================================
 insert into public.products (id, name, category, price, stock, sold, image)
 values
-  ('PRD-DONAT-1', 'Donat Klasik Gula Salju', 'Donat', 8000, 40, 125, '/images/products/donat.jpg'),
-  ('PRD-DONAT-2', 'Donat Bomboloni Nutella Lumer', 'Donat', 12000, 25, 94, '/images/products/donat-bomboloni.jpg'),
-  ('PRD-DONAT-3', 'Donat Tiramisu Almond Crunch', 'Donat', 11000, 30, 78, '/images/products/donat-tiramisu.jpg'),
-  ('PRD-COOKIE-1', 'Classic Choco Chip Cookies', 'Cookies', 15000, 30, 86, '/images/products/cookies-cokelat.jpg'),
-  ('PRD-COOKIE-2', 'Red Velvet Marshmallow Cookies', 'Cookies', 18000, 20, 62, '/images/products/cookies-red-velvet.jpg'),
-  ('PRD-COOKIE-3', 'Matcha White Choco Cookies', 'Cookies', 16000, 24, 55, '/images/products/cookies-matcha.jpg')
-on conflict (id) do nothing;
-
-insert into public.orders (id, customer, product, total, date, status, notes)
-values
-  ('ORD-101', 'Dinda (Bekasi Barat)', 'Donat Bomboloni Nutella Lumer (2 pcs)', 24000, 'Hari Ini, 08:30', 'Selesai', 'Tolong banyakin taburan gula halus ya'),
-  ('ORD-102', 'Bimo (Summarecon Bekasi)', 'Red Velvet Marshmallow Cookies (3 pcs)', 54000, 'Hari Ini, 09:15', 'Proses', 'Kirim pakai kurir instan')
+  ('PRD-001', 'Donat Klasik Gula Salju', 'Donat', 8000, 40, 125, '/images/products/donat.jpg'),
+  ('PRD-002', 'Donat Bomboloni Nutella Lumer', 'Donat', 12000, 25, 94, '/images/products/donat-bomboloni.jpg'),
+  ('PRD-003', 'Donat Tiramisu Almond Crunch', 'Donat', 11000, 30, 78, '/images/products/donat-tiramisu.jpg'),
+  ('PRD-004', 'Classic Choco Chip Cookies', 'Cookies', 15000, 30, 86, '/images/products/cookies-cokelat.jpg'),
+  ('PRD-005', 'Red Velvet Marshmallow Cookies', 'Cookies', 18000, 20, 62, '/images/products/cookies-red-velvet.jpg'),
+  ('PRD-006', 'Matcha White Choco Cookies', 'Cookies', 16000, 24, 55, '/images/products/cookies-matcha.jpg')
 on conflict (id) do nothing;
 
 insert into public.cashflow (id, "desc", type, amount, date, category)
 values
-  ('TX-201', 'Penjualan ORD-101 (Dinda)', 'in', 24000, 'Hari Ini, 08:30', 'Penjualan'),
-  ('TX-202', 'Beli Tepung Terigu Protein Sedang & Mentega', 'out', 65000, 'Kemarin, 14:00', 'Bahan Baku')
+  ('TX-001', 'Saldo / Modal Kas Awal Toko', 'in', 500000, 'Hari Ini', 'Modal'),
+  ('TX-002', 'Beli Tepung Terigu Protein Sedang & Mentega', 'out', 65000, 'Kemarin', 'Bahan Baku')
 on conflict (id) do nothing;
+
