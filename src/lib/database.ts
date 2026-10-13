@@ -100,42 +100,23 @@ export const DEFAULT_PRODUCTS: Product[] = [
   },
 ];
 
-export const DEFAULT_ORDERS: Order[] = [
-  {
-    id: "ORD-101",
-    customer: "Dinda (Bekasi Barat)",
-    product: "Donat Bomboloni Nutella Lumer (2 pcs)",
-    total: 24000,
-    date: "Hari Ini, 08:30",
-    status: "Selesai",
-    notes: "Tolong banyakin taburan gula halusnya ya",
-  },
-  {
-    id: "ORD-102",
-    customer: "Bimo (Summarecon Bekasi)",
-    product: "Red Velvet Marshmallow Cookies (3 pcs)",
-    total: 54000,
-    date: "Hari Ini, 09:15",
-    status: "Proses",
-    notes: "Kirim pakai kurir instan",
-  },
-];
+export const DEFAULT_ORDERS: Order[] = [];
 
 export const DEFAULT_CASHFLOW: CashTransaction[] = [
   {
-    id: "TX-201",
-    desc: "Penjualan ORD-101 (Dinda)",
+    id: "TX-101",
+    desc: "Saldo / Modal Kas Awal Toko",
     type: "in",
-    amount: 24000,
-    date: "Hari Ini, 08:30",
-    category: "Penjualan",
+    amount: 500000,
+    date: "Hari Ini",
+    category: "Modal",
   },
   {
-    id: "TX-202",
+    id: "TX-102",
     desc: "Beli Tepung Terigu Protein Sedang & Mentega",
     type: "out",
     amount: 65000,
-    date: "Kemarin, 14:00",
+    date: "Kemarin",
     category: "Bahan Baku",
   },
 ];
@@ -389,12 +370,10 @@ export const db = {
 
   // ORDERS / PENJUALAN
   getOrders(): Order[] {
-    const list = getItem<Order[]>(STORAGE_KEYS.ORDERS, []);
-    if (list.length === 0) {
-      setItem(STORAGE_KEYS.ORDERS, DEFAULT_ORDERS);
-      return DEFAULT_ORDERS;
-    }
-    return list;
+    return getItem<Order[]>(STORAGE_KEYS.ORDERS, []);
+  },
+  clearOrders(): void {
+    setItem(STORAGE_KEYS.ORDERS, []);
   },
   addOrder(input: {
     customer: string;

@@ -232,7 +232,7 @@ export function SpreadsheetView({
       o.date,
       o.notes || "",
     ]);
-    setOrderRows(oRows.length ? oRows : [["ORD-101", "Pelanggan Baru", "Donat Nutella", "24000", "Selesai", "Hari Ini", "-"]]);
+    setOrderRows(oRows);
 
     // Map Cashflow
     const cRows = cash.map((c) => [
@@ -1167,9 +1167,38 @@ export function SpreadsheetView({
 
           {/* BODY ROWS (1, 2, 3...) */}
           <tbody className="divide-y divide-border">
-            {displayRows.map((row, rIdx) => {
-              const isRowSelected = selectedCell?.row === rIdx;
-              const rowNum = rIdx + 2; // +2 for Excel numbering
+            {displayRows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={activeCols.length + 1}
+                  className="py-12 text-center bg-card/50"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto text-muted-foreground p-4">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-muted text-muted-foreground">
+                      <ShoppingCart className="h-5 w-5" />
+                    </div>
+                    <p className="font-semibold text-foreground text-sm">
+                      {activeSheet === "orders" ? "Belum Ada Pesanan Masuk" : "Tabel Kosong"}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {activeSheet === "orders"
+                        ? "Pesanan baru dari website atau input kasir akan langsung muncul otomatis di sini secara realtime!"
+                        : "Klik tombol Tambah Baris untuk memasukkan data baru."}
+                    </p>
+                    <button
+                      onClick={handleAddRow}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>{activeSheet === "orders" ? "Input Pesanan Baru" : "Tambah Baris"}</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              displayRows.map((row, rIdx) => {
+                const isRowSelected = selectedCell?.row === rIdx;
+                const rowNum = rIdx + 2; // +2 for Excel numbering
 
               return (
                 <tr
@@ -1301,7 +1330,7 @@ export function SpreadsheetView({
                   })}
                 </tr>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>

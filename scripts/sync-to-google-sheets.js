@@ -13,14 +13,10 @@ const products = [
   { id: "PRD-COOKIE-3", name: "Matcha White Choco Cookies", category: "Cookies", price: 16000, stock: 24, sold: 55 },
 ];
 
-const orders = [
-  { id: "ORD-101", customer: "Dinda (Bekasi Barat)", product: "Donat Bomboloni Nutella Lumer (2 pcs)", total: 24000, status: "Selesai", date: "Hari Ini, 08:30", notes: "Gula halus banyakin" },
-  { id: "ORD-102", customer: "Bimo (Summarecon Bekasi)", product: "Red Velvet Marshmallow Cookies (3 pcs)", total: 54000, status: "Proses", date: "Hari Ini, 09:15", notes: "Kurir instan" },
-];
+const orders = [];
 
 const cashflow = [
-  { id: "TX-201", desc: "Penjualan ORD-101 (Dinda)", type: "in", category: "Penjualan", amount: 24000, date: "Hari Ini, 08:30" },
-  { id: "TX-202", desc: "Beli Tepung Terigu & Mentega", type: "out", category: "Bahan Baku", amount: 65000, date: "Kemarin, 14:00" },
+  { id: "TX-101", desc: "Saldo / Modal Kas Awal Toko", type: "in", category: "Modal", amount: 500000, date: "Hari Ini" },
 ];
 
 async function sync() {
