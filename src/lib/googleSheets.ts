@@ -2,7 +2,7 @@ import { Product, Order, CashTransaction } from "./database";
 
 const DEFAULT_GAS_URL =
   (import.meta.env["VITE_GOOGLE_APPS_SCRIPT_URL"] as string) ||
-  "https://script.google.com/macros/s/AKfycbwNDFc1v35RlfU53I-IYjj-NgZIlua603XFXJvDnfHy84RwguqZoFGcJInP7bhvtNE2/exec";
+  "https://script.google.com/macros/s/AKfycbyZh6AAHsau1DJS5w3XOJiSCdVIZ3vrCkju2pFa7b733Qpd_Ocp6X78zx6LyzGyOFdG/exec";
 const GAS_URL_STORAGE_KEY = "umkm_google_sheets_url";
 const GOOGLE_DOC_URL_STORAGE_KEY = "umkm_google_sheet_doc_url";
 
