@@ -213,7 +213,7 @@ export const GOOGLE_APPS_SCRIPT_CODE = `/**
 var SHEET_PRODUCTS = "Produk & Stok";
 var SHEET_ORDERS = "Pesanan & Penjualan";
 var SHEET_CASHFLOW = "Arus Kas";
-var DEFAULT_WEB_URL = "http://localhost:8080";
+var DEFAULT_WEB_URL = "https://lalasa.my.id";
 
 function onOpen() {
   var ui = SpreadsheetApp.getUi();

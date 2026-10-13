@@ -23,7 +23,7 @@
 var SHEET_PRODUCTS = "Produk & Stok";
 var SHEET_ORDERS = "Pesanan & Penjualan";
 var SHEET_CASHFLOW = "Arus Kas";
-var DEFAULT_WEB_URL = "http://localhost:8080";
+var DEFAULT_WEB_URL = "https://lalasa.my.id";
 
 /**
  * Otomatis dijalankan saat Dokumen Google Sheets dibuka
