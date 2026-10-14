@@ -11,7 +11,6 @@ import {
   ImageIcon,
   ChevronDown,
   ArrowRight,
-  FileSpreadsheet,
 } from "lucide-react";
 import { db, DB_UPDATED_EVENT, Product, DEFAULT_PRODUCTS } from "@/lib/database";
 
@@ -156,18 +155,9 @@ function Index() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              to="/dashboard"
-              search={{ tab: "spreadsheet" }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-background/80 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted"
-              title="Buka Spreadsheet Toko"
-            >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">Spreadsheet</span>
-            </Link>
             <a
               href="#pesan"
-              className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 hover:shadow"
+              className="rounded-full bg-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 hover:shadow"
             >
               Pesan Sekarang
             </a>
@@ -175,7 +165,7 @@ function Index() {
         </div>
 
         {/* Navigasi Mobile Bar */}
-        <nav className="flex md:hidden items-center justify-center gap-4 border-t border-border/40 bg-muted/25 px-4 py-2 text-xs font-medium">
+        <nav className="flex md:hidden items-center justify-center gap-6 border-t border-border/40 bg-muted/25 px-4 py-2 text-xs font-medium">
           <a
             href="#produk"
             className="text-muted-foreground transition hover:text-primary"
@@ -189,19 +179,17 @@ function Index() {
             Keunggulan
           </a>
           <a
+            href="#tentang-kami"
+            className="text-muted-foreground transition hover:text-primary"
+          >
+            Tentang
+          </a>
+          <a
             href="#faq"
             className="text-muted-foreground transition hover:text-primary"
           >
             FAQ
           </a>
-          <Link
-            to="/dashboard"
-            search={{ tab: "spreadsheet" }}
-            className="text-emerald-700 dark:text-emerald-400 font-semibold inline-flex items-center gap-1"
-          >
-            <FileSpreadsheet className="h-3 w-3" />
-            Spreadsheet
-          </Link>
         </nav>
       </header>
 
@@ -523,7 +511,7 @@ function Index() {
               </div>
             </li>
           </ul>
-          <p className="mt-10 border-t border-accent-foreground/15 pt-6 text-xs text-accent-foreground/70">
+          <p className="mt-10 border-t border-accent-foreground/15 pt-6 text-xs text-accent-foreground/70 text-center">
             © {new Date().getFullYear()} Donat & Cookies Bekasi. Fresh · Lembut · Lumer.
           </p>
         </div>
